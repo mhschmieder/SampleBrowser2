@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="oQvo5x" name="SampleBrowser" projectType="guiapp" version="1.0.0"
+              bundleIdentifier="org.imekon.SampleBrowser" includeBinaryInAppConfig="1"
+              jucerVersion="3.1.0">
+  <MAINGROUP id="HTz2g4" name="SampleBrowser">
+    <GROUP id="{287D75F7-2BA2-6DB5-3D3D-DD82AE3AE0EC}" name="Source">
+      <FILE id="ECHeQF" name="DirectoryPane.cpp" compile="1" resource="0"
+            file="Source/DirectoryPane.cpp"/>
+      <FILE id="rMsP02" name="DirectoryPane.h" compile="0" resource="0" file="Source/DirectoryPane.h"/>
+      <FILE id="CQ1Qmz" name="FilesPane.cpp" compile="1" resource="0" file="Source/FilesPane.cpp"/>
+      <FILE id="GczdGk" name="FilesPane.h" compile="0" resource="0" file="Source/FilesPane.h"/>
+      <FILE id="LqyRbE" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="v7VqCe" name="MainComponent.cpp" compile="1" resource="0"
+            file="Source/MainComponent.cpp"/>
+      <FILE id="MIOrtz" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
+      <FILE id="ME7VhR" name="PreviewPane.cpp" compile="1" resource="0" file="Source/PreviewPane.cpp"/>
+      <FILE id="FPQ1xW" name="PreviewPane.h" compile="0" resource="0" file="Source/PreviewPane.h"/>
+      <FILE id="USIP35" name="SampleModel.cpp" compile="1" resource="0" file="Source/SampleModel.cpp"/>
+      <FILE id="bxKTYK" name="SampleModel.h" compile="0" resource="0" file="Source/SampleModel.h"/>
+      <FILE id="BH1fwO" name="SamplesModel.cpp" compile="1" resource="0"
+            file="Source/SamplesModel.cpp"/>
+      <FILE id="rMx6lq" name="SamplesModel.h" compile="0" resource="0" file="Source/SamplesModel.h"/>
+      <FILE id="HUPTpD" name="SamplesPane.cpp" compile="1" resource="0" file="Source/SamplesPane.cpp"/>
+      <FILE id="TOiOln" name="SamplesPane.h" compile="0" resource="0" file="Source/SamplesPane.h"/>
+      <FILE id="CsfZUO" name="ThumbnailComponent.cpp" compile="1" resource="0"
+            file="Source/ThumbnailComponent.cpp"/>
+      <FILE id="obVaxG" name="ThumbnailComponent.h" compile="0" resource="0"
+            file="Source/ThumbnailComponent.h"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <VS2013 targetFolder="Builds/VisualStudio2013">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
+                       isDebug="1" optimisation="1" targetName="SampleBrowser"/>
+        <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
+                       isDebug="0" optimisation="2" targetName="SampleBrowser"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_video" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../toolkits/JUCE/modules"/>
+      </MODULEPATHS>
+    </VS2013>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULES id="juce_audio_basics" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_audio_devices" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_audio_formats" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_audio_processors" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_audio_utils" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_core" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_cryptography" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_data_structures" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_events" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_graphics" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_gui_basics" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_gui_extra" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_opengl" showAllCode="1" useLocalCopy="1"/>
+    <MODULES id="juce_video" showAllCode="1" useLocalCopy="1"/>
+  </MODULES>
+  <JUCEOPTIONS/>
+</JUCERPROJECT>
