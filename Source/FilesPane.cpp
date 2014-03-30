@@ -55,5 +55,18 @@ void FilesPane::updateRow(int row)
 
 void FilesPane::selectedSample(SampleModel *sample)
 {
+	notifyListeners(sample);
+}
 
+void FilesPane::addListener(Listener *listener)
+{
+	listeners.add(listener);
+}
+
+void FilesPane::notifyListeners(SampleModel *sample)
+{
+	for (int i = 0; i < listeners.size(); i++)
+	{
+		listeners[i]->selectedSample(sample);
+	}
 }

@@ -17,13 +17,14 @@
 //==============================================================================
 /*
 */
-class SamplesPane : public Component
+class SamplesPane : public Component, public FilesPane::Listener
 {
 public:
-	SamplesPane(AudioFormatManager &formatManager, AudioTransportSource &transportSource);
+	SamplesPane(TimeSliceThread &thread, AudioFormatManager &formatManager, AudioTransportSource &transportSource);
     virtual ~SamplesPane();
 
     void resized() override;
+	void selectedSample(SampleModel *sample) override;
 
 	void selectionChanged(const File &file);
 

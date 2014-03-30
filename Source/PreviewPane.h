@@ -16,19 +16,29 @@
 //==============================================================================
 /*
 */
-class PreviewPane    : public Component
+class PreviewPane : public Component, public Button::Listener, public Slider::Listener
 {
 public:
-    PreviewPane(AudioFormatManager &formatManager, AudioTransportSource &transportSource);
+	PreviewPane(TimeSliceThread &theThread, AudioFormatManager &theFormatManager, AudioTransportSource &theTransportSource);
     virtual ~PreviewPane();
 
     void resized() override;
+	void setSampleFile(const File &file);
+	void buttonClicked(Button *button) override;
+	void sliderValueChanged(Slider* slider) override;
 
 private:
+	TimeSliceThread &thread;
+	AudioFormatManager &formatManager;
+	AudioTransportSource &transportSource;
+	ScopedPointer<AudioFormatReaderSource> current;
 	ThumbnailComponent preview;
 	TextButton playButton;
 	TextButton stopButton;
 	Slider zoomSlider;
+
+	void playSample();
+	void stopSample();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PreviewPane)
 };

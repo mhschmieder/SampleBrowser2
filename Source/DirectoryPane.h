@@ -16,7 +16,7 @@
 //==============================================================================
 /*
 */
-class DirectoryPane : public Component, public FileBrowserListener
+class DirectoryPane : public Component, public FileBrowserListener, public TextEditor::Listener
 {
 public:
 	class Listener
@@ -25,7 +25,7 @@ public:
 		virtual void selectionChanged(const File &file) = 0;
 	};
 
-    DirectoryPane();
+    DirectoryPane(TimeSliceThread &theThread);
     virtual ~DirectoryPane();
 
     void resized() override;
@@ -34,6 +34,7 @@ public:
 	void fileClicked(const File &, const MouseEvent &) override { }
 	void fileDoubleClicked(const File &) override { }
 	void browserRootChanged(const File &) override { }
+	void textEditorReturnKeyPressed(TextEditor &textEditor) override;
 
 	void addListener(Listener *listener);
 
@@ -42,7 +43,7 @@ private:
 	TextEditor directoryField;
 	TextButton browseButton;
 	TextButton upButton;
-	TimeSliceThread thread;
+	TimeSliceThread &thread;
 	DirectoryContentsList directoryContents;
 	FileTreeComponent fileTree;
 	Array<Listener *> listeners;

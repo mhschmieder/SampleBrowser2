@@ -12,9 +12,9 @@
 #include "SamplesPane.h"
 
 //==============================================================================
-SamplesPane::SamplesPane(AudioFormatManager &formatManager, AudioTransportSource &transportSource) :
+SamplesPane::SamplesPane(TimeSliceThread &thread, AudioFormatManager &formatManager, AudioTransportSource &transportSource) :
 	resizer(&layout, 1, false), 
-	previewPane(formatManager, transportSource)
+	previewPane(thread, formatManager, transportSource)
 {
 	layout.setItemLayout(0, -0.2, -0.8, -0.8);
 	layout.setItemLayout(1, 5.0, 5.0, 5.0);
@@ -22,6 +22,8 @@ SamplesPane::SamplesPane(AudioFormatManager &formatManager, AudioTransportSource
 	addAndMakeVisible(filesPane);
 	addAndMakeVisible(resizer);
 	addAndMakeVisible(previewPane);
+
+	filesPane.addListener(this);
 }
 
 SamplesPane::~SamplesPane()
@@ -37,4 +39,10 @@ void SamplesPane::resized()
 void SamplesPane::selectionChanged(const File &file)
 {
 	filesPane.selectionChanged(file);
+}
+
+void SamplesPane::selectedSample(SampleModel *sample)
+{
+	File file(sample->getFilename());
+	previewPane.setSampleFile(file);
 }

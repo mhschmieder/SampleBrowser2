@@ -30,7 +30,10 @@ public:
 private:
 	LookAndFeel_V3 lookAndFeel;
 
+	TimeSliceThread thread;
+	AudioDeviceManager deviceManager;
 	AudioFormatManager formatManager;
+	AudioSourcePlayer sourcePlayer;
 	AudioTransportSource transportSource;
 
 	StretchableLayoutManager layout;

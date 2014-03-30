@@ -12,7 +12,7 @@
 #include "DirectoryPane.h"
 
 //==============================================================================
-DirectoryPane::DirectoryPane() : thread("directory contents"), directoryContents(nullptr, thread), fileTree(directoryContents)
+DirectoryPane::DirectoryPane(TimeSliceThread &theThread) : thread(theThread), directoryContents(nullptr, thread), fileTree(directoryContents)
 {
 	addAndMakeVisible(directoryField);
 	addAndMakeVisible(browseButton);
@@ -28,6 +28,7 @@ DirectoryPane::DirectoryPane() : thread("directory contents"), directoryContents
 	thread.startThread(3);
 
 	fileTree.addListener(this);
+	directoryField.addListener(this);
 }
 
 DirectoryPane::~DirectoryPane()
@@ -59,4 +60,10 @@ void DirectoryPane::notifyListeners(const File &file)
 	{
 		listeners[i]->selectionChanged(file);
 	}
+}
+
+void DirectoryPane::textEditorReturnKeyPressed(TextEditor &textEditor)
+{
+	currentPath = directoryField.getText();
+	directoryContents.setDirectory(currentPath, true, false);
 }
