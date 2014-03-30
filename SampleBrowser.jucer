@@ -4,6 +4,9 @@
               bundleIdentifier="org.imekon.SampleBrowser" includeBinaryInAppConfig="1"
               jucerVersion="3.1.0">
   <MAINGROUP id="HTz2g4" name="SampleBrowser">
+    <GROUP id="{7059D50C-5594-CDA8-9AE4-7A424BDD5E10}" name="Resources">
+      <FILE id="eXn290" name="speaker.png" compile="0" resource="1" file="resources/speaker.png"/>
+    </GROUP>
     <GROUP id="{287D75F7-2BA2-6DB5-3D3D-DD82AE3AE0EC}" name="Source">
       <FILE id="ECHeQF" name="DirectoryPane.cpp" compile="1" resource="0"
             file="Source/DirectoryPane.cpp"/>
@@ -30,7 +33,7 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <VS2013 targetFolder="Builds/VisualStudio2013">
+    <VS2013 targetFolder="Builds/VisualStudio2013" smallIcon="eXn290" bigIcon="eXn290">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
                        isDebug="1" optimisation="1" targetName="SampleBrowser"/>
@@ -38,20 +41,20 @@
                        isDebug="0" optimisation="2" targetName="SampleBrowser"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_video" path="../../juce/JUCE/modules"/>
-        <MODULEPATH id="juce_opengl" path="../../juce/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="../../juce/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="../../juce/JUCE/modules"/>
-        <MODULEPATH id="juce_graphics" path="../../juce/JUCE/modules"/>
-        <MODULEPATH id="juce_events" path="../../juce/JUCE/modules"/>
-        <MODULEPATH id="juce_data_structures" path="../../juce/JUCE/modules"/>
-        <MODULEPATH id="juce_cryptography" path="../../juce/JUCE/modules"/>
-        <MODULEPATH id="juce_core" path="../../juce/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="../../juce/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../../juce/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="../../juce/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="../../juce/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_basics" path="../../juce/JUCE/modules"/>
+        <MODULEPATH id="juce_video" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../toolkits/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../toolkits/JUCE/modules"/>
       </MODULEPATHS>
     </VS2013>
   </EXPORTFORMATS>

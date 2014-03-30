@@ -41,50 +41,41 @@ public:
     WebInputStream (const String& address_, bool isPost_, const MemoryBlock& postData_,
                     URL::OpenStreamProgressCallback* progressCallback, void* progressCallbackContext,
                     const String& headers_, int timeOutMs_, StringPairArray* responseHeaders)
-      : statusCode (0), connection (0), request (0),
+      : connection (0), request (0),
         address (address_), headers (headers_), postData (postData_), position (0),
         finished (false), isPost (isPost_), timeOutMs (timeOutMs_)
     {
         createConnection (progressCallback, progressCallbackContext);
 
-        if (! isError())
+        if (responseHeaders != nullptr && ! isError())
         {
-            if (responseHeaders != nullptr)
+            DWORD bufferSizeBytes = 4096;
+
+            for (;;)
             {
-                DWORD bufferSizeBytes = 4096;
+                HeapBlock<char> buffer ((size_t) bufferSizeBytes);
 
-                for (;;)
+                if (HttpQueryInfo (request, HTTP_QUERY_RAW_HEADERS_CRLF, buffer.getData(), &bufferSizeBytes, 0))
                 {
-                    HeapBlock<char> buffer ((size_t) bufferSizeBytes);
+                    StringArray headersArray;
+                    headersArray.addLines (String (reinterpret_cast<const WCHAR*> (buffer.getData())));
 
-                    if (HttpQueryInfo (request, HTTP_QUERY_RAW_HEADERS_CRLF, buffer.getData(), &bufferSizeBytes, 0))
+                    for (int i = 0; i < headersArray.size(); ++i)
                     {
-                        StringArray headersArray;
-                        headersArray.addLines (String (reinterpret_cast<const WCHAR*> (buffer.getData())));
+                        const String& header = headersArray[i];
+                        const String key (header.upToFirstOccurrenceOf (": ", false, false));
+                        const String value (header.fromFirstOccurrenceOf (": ", false, false));
+                        const String previousValue ((*responseHeaders) [key]);
 
-                        for (int i = 0; i < headersArray.size(); ++i)
-                        {
-                            const String& header = headersArray[i];
-                            const String key (header.upToFirstOccurrenceOf (": ", false, false));
-                            const String value (header.fromFirstOccurrenceOf (": ", false, false));
-                            const String previousValue ((*responseHeaders) [key]);
-
-                            responseHeaders->set (key, previousValue.isEmpty() ? value : (previousValue + "," + value));
-                        }
-
-                        break;
+                        responseHeaders->set (key, previousValue.isEmpty() ? value : (previousValue + "," + value));
                     }
 
-                    if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
-                        break;
+                    break;
                 }
+
+                if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+                    break;
             }
-
-            DWORD status = 0;
-            DWORD statusSize = sizeof (status);
-
-            if (HttpQueryInfo (request, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &status, &statusSize, 0))
-                statusCode = (int) status;
         }
     }
 
@@ -153,8 +144,6 @@ public:
 
         return true;
     }
-
-    int statusCode;
 
 private:
     //==============================================================================
@@ -315,6 +304,17 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (WebInputStream)
 };
+
+InputStream* URL::createNativeStream (const String& address, bool isPost, const MemoryBlock& postData,
+                                      OpenStreamProgressCallback* progressCallback, void* progressCallbackContext,
+                                      const String& headers, const int timeOutMs, StringPairArray* responseHeaders)
+{
+    ScopedPointer <WebInputStream> wi (new WebInputStream (address, isPost, postData,
+                                                           progressCallback, progressCallbackContext,
+                                                           headers, timeOutMs, responseHeaders));
+
+    return wi->isError() ? nullptr : wi.release();
+}
 
 
 //==============================================================================

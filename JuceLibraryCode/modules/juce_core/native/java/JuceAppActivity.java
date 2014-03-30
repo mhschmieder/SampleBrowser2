@@ -589,34 +589,10 @@ public final class JuceAppActivity   extends Activity
     //==============================================================================
     public static class HTTPStream
     {
-        public HTTPStream (HttpURLConnection connection_,
-                           int[] statusCode, StringBuffer responseHeaders) throws IOException
+        public HTTPStream (HttpURLConnection connection_) throws IOException
         {
             connection = connection_;
-
-            try
-            {
-                inputStream = new BufferedInputStream (connection.getInputStream());
-            }
-            catch (IOException e)
-            {
-                if (connection.getResponseCode() < org.apache.http.HttpStatus.SC_BAD_REQUEST)
-                    throw e;
-            }
-            finally
-            {
-                statusCode[0] = connection.getResponseCode();
-            }
-
-            if (statusCode[0] >= org.apache.http.HttpStatus.SC_BAD_REQUEST)
-                inputStream = connection.getErrorStream();
-            else
-                inputStream = connection.getInputStream();
-
-            for (java.util.Map.Entry<String, java.util.List<String>> entry : connection.getHeaderFields().entrySet())
-                if (entry.getKey() != null && entry.getValue() != null)
-                    responseHeaders.append (entry.getKey() + ": "
-                                             + android.text.TextUtils.join (",", entry.getValue()) + "\n");
+            inputStream = new BufferedInputStream (connection.getInputStream());
         }
 
         public final void release()
@@ -658,31 +634,30 @@ public final class JuceAppActivity   extends Activity
         private long position;
     }
 
-    public static final HTTPStream createHTTPStream (String address,
-                                                     boolean isPost, byte[] postData, String headers,
-                                                     int timeOutMs, int[] statusCode,
-                                                     StringBuffer responseHeaders)
+    public static final HTTPStream createHTTPStream (String address, boolean isPost, byte[] postData,
+                                                     String headers, int timeOutMs,
+                                                     java.lang.StringBuffer responseHeaders)
     {
         try
         {
-            HttpURLConnection connection = (HttpURLConnection) (new URL(address)
-                    .openConnection());
+            HttpURLConnection connection = (HttpURLConnection) (new URL (address).openConnection());
+
             if (connection != null)
             {
                 try
                 {
                     if (isPost)
                     {
-                        connection.setRequestMethod("POST");
-                        connection.setConnectTimeout(timeOutMs);
-                        connection.setDoOutput(true);
-                        connection.setChunkedStreamingMode(0);
+                        connection.setConnectTimeout (timeOutMs);
+                        connection.setDoOutput (true);
+                        connection.setChunkedStreamingMode (0);
+
                         OutputStream out = connection.getOutputStream();
-                        out.write(postData);
+                        out.write (postData);
                         out.flush();
                     }
 
-                    return new HTTPStream (connection, statusCode, responseHeaders);
+                    return new HTTPStream (connection);
                 }
                 catch (Throwable e)
                 {
@@ -690,7 +665,8 @@ public final class JuceAppActivity   extends Activity
                 }
             }
         }
-        catch (Throwable e) {}
+        catch (Throwable e)
+        {}
 
         return null;
     }

@@ -48,6 +48,8 @@ CallOutBox::~CallOutBox()
 {
 }
 
+enum { callOutBoxDismissCommandId = 0x4f83a04b };
+
 //==============================================================================
 class CallOutBoxCallback  : public ModalComponentManager::Callback,
                             private Timer
@@ -66,7 +68,7 @@ public:
     void timerCallback() override
     {
         if (! Process::isForegroundProcess())
-            callout.dismiss();
+            callout.postCommandMessage (callOutBoxDismissCommandId);
     }
 
     ScopedPointer<Component> content;
@@ -125,7 +127,7 @@ void CallOutBox::inputAttemptWhenModal()
         // if you click on the area that originally popped-up the callout, you expect it
         // to get rid of the box, but deleting the box here allows the click to pass through and
         // probably re-trigger it, so we need to dismiss the box asynchronously to consume the click..
-        dismiss();
+        postCommandMessage (callOutBoxDismissCommandId);
     }
     else
     {
@@ -133,8 +135,6 @@ void CallOutBox::inputAttemptWhenModal()
         setVisible (false);
     }
 }
-
-enum { callOutBoxDismissCommandId = 0x4f83a04b };
 
 void CallOutBox::handleCommandMessage (int commandId)
 {
@@ -145,11 +145,6 @@ void CallOutBox::handleCommandMessage (int commandId)
         exitModalState (0);
         setVisible (false);
     }
-}
-
-void CallOutBox::dismiss()
-{
-    postCommandMessage (callOutBoxDismissCommandId);
 }
 
 bool CallOutBox::keyPressed (const KeyPress& key)

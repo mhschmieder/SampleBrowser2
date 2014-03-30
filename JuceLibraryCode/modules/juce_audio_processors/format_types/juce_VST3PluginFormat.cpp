@@ -1717,7 +1717,7 @@ public:
 
         if (head != nullptr)
         {
-            ComSmartPtr<Steinberg::MemoryStream> s (createMemoryStreamForState (*head, "IComponent"));
+            ScopedPointer<Steinberg::MemoryStream> s (createMemoryStreamForState (*head, "IComponent"));
 
             if (s != nullptr && component != nullptr)
                 component->setState (s);
