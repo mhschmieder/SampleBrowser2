@@ -16,7 +16,7 @@
 //==============================================================================
 /*
 */
-class DirectoryPane : public Component, public FileBrowserListener, public TextEditor::Listener
+class DirectoryPane : public Component, public FileBrowserListener, public TextEditor::Listener, public Button::Listener
 {
 public:
 	class Listener
@@ -35,6 +35,7 @@ public:
 	void fileDoubleClicked(const File &) override { }
 	void browserRootChanged(const File &) override { }
 	void textEditorReturnKeyPressed(TextEditor &textEditor) override;
+	void buttonClicked(Button *button) override;
 
 	void addListener(Listener *listener);
 
@@ -49,6 +50,8 @@ private:
 	Array<Listener *> listeners;
 
 	void notifyListeners(const File &file);
+	void upPath();
+	void browsePath();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectoryPane)
 };

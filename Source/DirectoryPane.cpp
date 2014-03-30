@@ -27,6 +27,8 @@ DirectoryPane::DirectoryPane(TimeSliceThread &theThread) : thread(theThread), di
 	directoryContents.setDirectory(currentPath, true, false);
 	thread.startThread(3);
 
+	browseButton.addListener(this);
+	upButton.addListener(this);
 	fileTree.addListener(this);
 	directoryField.addListener(this);
 }
@@ -62,8 +64,41 @@ void DirectoryPane::notifyListeners(const File &file)
 	}
 }
 
-void DirectoryPane::textEditorReturnKeyPressed(TextEditor &textEditor)
+void DirectoryPane::textEditorReturnKeyPressed(TextEditor &)
 {
 	currentPath = directoryField.getText();
 	directoryContents.setDirectory(currentPath, true, false);
 }
+
+void DirectoryPane::buttonClicked(Button *button)
+{
+	if (button == &upButton)
+	{
+		upPath();
+	}
+	else if (button == &browseButton)
+	{
+		browsePath();
+	}
+}
+
+void DirectoryPane::upPath()
+{
+	currentPath = currentPath.getParentDirectory();
+	directoryField.setText(currentPath.getFullPathName(), false);
+	directoryContents.setDirectory(currentPath, true, false);
+}
+
+void DirectoryPane::browsePath()
+{
+	FileBrowserComponent browser(FileBrowserComponent::canSelectDirectories | FileBrowserComponent::openMode, currentPath, nullptr, nullptr);
+	FileChooserDialogBox dialog("Select path", String::empty, browser, false, Colours::lightgrey);
+	if (dialog.show())
+	{
+		currentPath = browser.getSelectedFile(0);
+		directoryField.setText(currentPath.getFullPathName(), false);
+		directoryContents.setDirectory(currentPath, true, false);
+	}
+}
+
+

@@ -26,30 +26,33 @@ void SamplesModel::paintCell(Graphics &g, int row, int id, int width, int height
 {
 	String text;
 	SampleModel *sample = samples[row];
-	switch (id)
+	if (sample)
 	{
-	case name:
-		text = sample->getName();
-		break;
+		switch (id)
+		{
+		case name:
+			text = sample->getName();
+			break;
 
-	case sampleRate:
-		text = String(sample->getSampleRate());
-		break;
+		case sampleRate:
+			text = String(sample->getSampleRate());
+			break;
 
-	case channels:
-		text = String(sample->getChannels());
-		break;
+		case channels:
+			text = String(sample->getChannels());
+			break;
 
-	case bits:
-		text = String(sample->getBits());
-		break;
+		case bits:
+			text = String(sample->getBits());
+			break;
 
-	case size:
-		text = String(sample->getSize());
-		break;
+		case size:
+			text = String(sample->getSize());
+			break;
+		}
+		g.setColour(Colours::black);
+		g.drawText(text, 0, 0, width, height, Justification::centred, true);
 	}
-	g.setColour(Colours::black);
-	g.drawText(text, 0, 0, width, height, Justification::centred, true);
 }
 
 void SamplesModel::run()
