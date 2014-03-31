@@ -112,7 +112,23 @@ void DirectoryPane::browsePath()
 
 void DirectoryPane::addFavourites()
 {
-	int id = directoryField.getNumItems() + 1;
-	directoryField.addItem(directoryField.getText(), id);
+	addFavourite(directoryField.getText());
 }
 
+void DirectoryPane::addFavourite(StringRef favourite)
+{
+	int id = directoryField.getNumItems() + 1;
+	directoryField.addItem(favourite.text, id);
+}
+
+StringArray DirectoryPane::getFavourites()
+{
+	StringArray result;
+	int numFavourites = directoryField.getNumItems();
+	for (int i = 0; i < numFavourites; i++)
+	{
+		String value = directoryField.getItemText(i);
+		result.add(value);
+	}
+	return result;
+}

@@ -40,6 +40,10 @@ private:
 	DirectoryPane directoryPane;
 	StretchableLayoutResizerBar resizer;
 	SamplesPane samplesPane;
+	ApplicationProperties applicationProperties;
+
+	void loadOptions();
+	void saveOptions();
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)

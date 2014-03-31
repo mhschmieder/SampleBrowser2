@@ -27,6 +27,9 @@ MainComponent::MainComponent() :
 	addAndMakeVisible(samplesPane);
 	directoryPane.addListener(this);
 	formatManager.registerBasicFormats();
+
+	loadOptions();
+
     setSize (800, 600);
 }
 
@@ -36,6 +39,7 @@ MainComponent::~MainComponent()
 	sourcePlayer.setSource(nullptr);
 	transportSource.stop();
 	transportSource.setSource(nullptr);
+	saveOptions();
 }
 
 void MainComponent::resized()
@@ -47,4 +51,37 @@ void MainComponent::resized()
 void MainComponent::selectionChanged(const File &file)
 {
 	samplesPane.selectionChanged(file);
+}
+
+void MainComponent::loadOptions()
+{
+	PropertiesFile::Options options;
+
+	options.applicationName = ProjectInfo::projectName;
+	options.folderName = ProjectInfo::projectName;
+	options.filenameSuffix = "settings";
+	options.osxLibrarySubFolder = "Applications Support";
+	applicationProperties.setStorageParameters(options);
+
+	PropertiesFile *properties = applicationProperties.getUserSettings();
+
+	String value = properties->getValue("numFavourites", "0");
+	int numFavourites = value.getIntValue();
+	for (int index = 0; index < numFavourites; index++)
+	{
+		value = properties->getValue(String("favourite") + String(index));
+		directoryPane.addFavourite(value);
+	}
+}
+
+void MainComponent::saveOptions()
+{
+	PropertiesFile *properties = applicationProperties.getUserSettings();
+
+	StringArray favourites = directoryPane.getFavourites();
+	properties->setValue("numFavourites", favourites.size());
+	for (int index = 0; index < favourites.size(); index++)
+	{
+		properties->setValue(String("favourite") + String(index), favourites[index]);
+	}
 }

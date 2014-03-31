@@ -39,6 +39,9 @@ public:
 
 	void addListener(Listener *listener);
 
+	void addFavourite(StringRef favourite);
+	StringArray getFavourites();
+
 private:
 	File currentPath;
 	ComboBox directoryField;
