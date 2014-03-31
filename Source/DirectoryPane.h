@@ -16,7 +16,7 @@
 //==============================================================================
 /*
 */
-class DirectoryPane : public Component, public FileBrowserListener, public TextEditor::Listener, public Button::Listener
+class DirectoryPane : public Component, public FileBrowserListener, public ComboBox::Listener, public Button::Listener
 {
 public:
 	class Listener
@@ -34,16 +34,17 @@ public:
 	void fileClicked(const File &, const MouseEvent &) override { }
 	void fileDoubleClicked(const File &) override { }
 	void browserRootChanged(const File &) override { }
-	void textEditorReturnKeyPressed(TextEditor &textEditor) override;
+	void comboBoxChanged(ComboBox *comboBox) override;
 	void buttonClicked(Button *button) override;
 
 	void addListener(Listener *listener);
 
 private:
 	File currentPath;
-	TextEditor directoryField;
+	ComboBox directoryField;
 	TextButton browseButton;
 	TextButton upButton;
+	TextButton favouritesButton;
 	TimeSliceThread &thread;
 	DirectoryContentsList directoryContents;
 	FileTreeComponent fileTree;
@@ -52,6 +53,7 @@ private:
 	void notifyListeners(const File &file);
 	void upPath();
 	void browsePath();
+	void addFavourites();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectoryPane)
 };

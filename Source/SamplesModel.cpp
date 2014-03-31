@@ -51,7 +51,7 @@ void SamplesModel::paintCell(Graphics &g, int row, int id, int width, int height
 			break;
 		}
 		g.setColour(Colours::black);
-		g.drawText(text, 0, 0, width, height, Justification::centred, true);
+		g.drawText(text, 2, 2, width - 4, height - 4, Justification::left, true);
 	}
 }
 
