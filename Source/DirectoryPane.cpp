@@ -43,7 +43,7 @@ DirectoryPane::~DirectoryPane()
 
 void DirectoryPane::resized()
 {
-	directoryField.setBounds(2, 2, getWidth() - 98, 24);
+	directoryField.setBounds(2, 2, getWidth() - 100, 24);
 	browseButton.setBounds(getWidth() - 96, 2, 30, 24);
 	upButton.setBounds(getWidth() - 64, 2, 30, 24);
 	favouritesButton.setBounds(getWidth() - 32, 2, 30, 24);
