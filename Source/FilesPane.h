@@ -22,6 +22,7 @@ public:
 	class Listener
 	{
 	public:
+		virtual ~Listener() { }
 		virtual void selectedSample(SampleModel *sample) = 0;
 	};
 

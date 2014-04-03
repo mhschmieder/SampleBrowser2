@@ -31,6 +31,9 @@ public:
         : Thread ("OpenGL Rendering"),
           context (c), component (comp),
           scale (1.0),
+         #if JUCE_OPENGL3
+          vertexArrayObject (0),
+         #endif
          #if JUCE_OPENGL_ES
           shadersAvailable (true),
          #else
@@ -39,7 +42,8 @@ public:
           hasInitialised (false),
           needsUpdate (1), lastMMLockReleaseTime (0)
     {
-        nativeContext = new NativeContext (component, pixFormat, contextToShare, c.useMultisampling);
+        nativeContext = new NativeContext (component, pixFormat, contextToShare,
+                                           c.useMultisampling, c.versionRequired);
 
         if (nativeContext->createdOk())
             context.nativeContext = nativeContext;
@@ -349,6 +353,14 @@ public:
         context.makeActive();
         nativeContext->initialiseOnRenderThread (context);
 
+       #if JUCE_OPENGL3
+        if (OpenGLShaderProgram::getLanguageVersion() > 1.2)
+        {
+            glGenVertexArrays (1, &vertexArrayObject);
+            glBindVertexArray (vertexArrayObject);
+        }
+       #endif
+
         glViewport (0, 0, component.getWidth(), component.getHeight());
 
         context.extensions.initialise();
@@ -366,6 +378,11 @@ public:
     {
         if (context.renderer != nullptr)
             context.renderer->openGLContextClosing();
+
+       #if JUCE_OPENGL3
+        if (vertexArrayObject != 0)
+            glDeleteVertexArrays (1, &vertexArrayObject);
+       #endif
 
         cachedImageFrameBuffer.release();
         nativeContext->shutdownOnRenderThread();
@@ -390,6 +407,9 @@ public:
     RectangleList<int> validArea;
     Rectangle<int> viewportArea, lastScreenBounds;
     double scale;
+   #if JUCE_OPENGL3
+    GLuint vertexArrayObject;
+   #endif
 
     StringArray associatedObjectNames;
     ReferenceCountedArray<ReferenceCountedObject> associatedObjects;
@@ -553,8 +573,8 @@ private:
 //==============================================================================
 OpenGLContext::OpenGLContext()
     : nativeContext (nullptr), renderer (nullptr), currentRenderScale (1.0),
-      contextToShareWith (nullptr), renderComponents (true),
-      useMultisampling (false), continuousRepaint (false)
+      contextToShareWith (nullptr), versionRequired (OpenGLContext::defaultGLVersion),
+      renderComponents (true), useMultisampling (false), continuousRepaint (false)
 {
 }
 
@@ -611,6 +631,11 @@ void OpenGLContext::setMultisamplingEnabled (bool b) noexcept
     jassert (nativeContext == nullptr);
 
     useMultisampling = b;
+}
+
+void OpenGLContext::setOpenGLVersionRequired (OpenGLVersion v) noexcept
+{
+    versionRequired = v;
 }
 
 void OpenGLContext::attachTo (Component& component)
@@ -803,28 +828,28 @@ void OpenGLContext::copyTexture (const Rectangle<int>& targetClipArea,
             {
                 ProgramBuilder (OpenGLShaderProgram& prog)
                 {
-                    prog.addShader ("attribute " JUCE_HIGHP " vec2 position;"
-                                    "uniform " JUCE_HIGHP " vec2 screenSize;"
-                                    "varying " JUCE_HIGHP " vec2 pixelPos;"
-                                    "void main()"
-                                    "{"
-                                    "pixelPos = position;"
-                                    JUCE_HIGHP " vec2 scaled = position / (0.5 * screenSize.xy);"
-                                    "gl_Position = vec4 (scaled.x - 1.0, 1.0 - scaled.y, 0, 1.0);"
-                                    "}",
-                                    GL_VERTEX_SHADER);
+                    prog.addVertexShader (OpenGLHelpers::translateVertexShaderToV3 (
+                                            "attribute " JUCE_HIGHP " vec2 position;"
+                                            "uniform " JUCE_HIGHP " vec2 screenSize;"
+                                            "varying " JUCE_HIGHP " vec2 pixelPos;"
+                                            "void main()"
+                                            "{"
+                                              "pixelPos = position;"
+                                              JUCE_HIGHP " vec2 scaled = position / (0.5 * screenSize.xy);"
+                                              "gl_Position = vec4 (scaled.x - 1.0, 1.0 - scaled.y, 0, 1.0);"
+                                            "}"));
 
-                    prog.addShader ("uniform sampler2D imageTexture;"
-                                    "uniform " JUCE_HIGHP " float textureBounds[4];"
-                                    "uniform " JUCE_HIGHP " vec2 vOffsetAndScale;"
-                                    "varying " JUCE_HIGHP " vec2 pixelPos;"
-                                    "void main()"
-                                    "{"
-                                     JUCE_HIGHP " vec2 texturePos = (pixelPos - vec2 (textureBounds[0], textureBounds[1]))"
-                                                                      "/ vec2 (textureBounds[2], textureBounds[3]);"
-                                     "gl_FragColor = texture2D (imageTexture, vec2 (texturePos.x, vOffsetAndScale.x + vOffsetAndScale.y * texturePos.y));"
-                                    "}",
-                                    GL_FRAGMENT_SHADER);
+                    prog.addFragmentShader (OpenGLHelpers::translateFragmentShaderToV3 (
+                                             "uniform sampler2D imageTexture;"
+                                             "uniform " JUCE_HIGHP " float textureBounds[4];"
+                                             "uniform " JUCE_HIGHP " vec2 vOffsetAndScale;"
+                                             "varying " JUCE_HIGHP " vec2 pixelPos;"
+                                             "void main()"
+                                             "{"
+                                               JUCE_HIGHP " vec2 texturePos = (pixelPos - vec2 (textureBounds[0], textureBounds[1]))"
+                                                                                 "/ vec2 (textureBounds[2], textureBounds[3]);"
+                                              "gl_FragColor = texture2D (imageTexture, vec2 (texturePos.x, vOffsetAndScale.x + vOffsetAndScale.y * texturePos.y));"
+                                            "}"));
                     prog.link();
                 }
             };
@@ -887,7 +912,7 @@ void OpenGLContext::copyTexture (const Rectangle<int>& targetClipArea,
     }
     else
     {
-        jassertfalse; // Running on an old graphics card!
+        jassert (attachment == nullptr); // Running on an old graphics card!
     }
 
     JUCE_CHECK_OPENGL_ERROR

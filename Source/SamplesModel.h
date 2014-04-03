@@ -18,6 +18,7 @@ public:
 	class Listener
 	{
 	public:
+		virtual ~Listener() { }
 		virtual void updateRow(int row) = 0;
 		virtual void selectedSample(SampleModel *sample) = 0;
 	};

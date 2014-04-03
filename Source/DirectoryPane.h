@@ -22,6 +22,7 @@ public:
 	class Listener
 	{
 	public:
+		virtual ~Listener() { }
 		virtual void selectionChanged(const File &file) = 0;
 	};
 
