@@ -2,31 +2,33 @@
   ==============================================================================
 
    This file is part of the JUCE library.
-   Copyright (c) 2013 - Raw Material Software Ltd.
+   Copyright (c) 2017 - ROLI Ltd.
 
-   Permission is granted to use this software under the terms of either:
-   a) the GPL v2 (or any later version)
-   b) the Affero GPL v3
+   JUCE is an open source library subject to commercial or open-source
+   licensing.
 
-   Details of these licenses can be found at: www.gnu.org/licenses
+   By using JUCE, you agree to the terms of both the JUCE 5 End-User License
+   Agreement and JUCE 5 Privacy Policy (both updated and effective as of the
+   27th April 2017).
 
-   JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
-   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   End User License Agreement: www.juce.com/juce-5-licence
+   Privacy Policy: www.juce.com/juce-5-privacy-policy
 
-   ------------------------------------------------------------------------------
+   Or: You may also use this code under the terms of the GPL v3 (see
+   www.gnu.org/licenses).
 
-   To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.juce.com for more information.
+   JUCE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
+   EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
+   DISCLAIMED.
 
   ==============================================================================
 */
 
+namespace juce
+{
+
 DrawableButton::DrawableButton (const String& name, const DrawableButton::ButtonStyle buttonStyle)
-    : Button (name),
-      style (buttonStyle),
-      currentImage (nullptr),
-      edgeIndent (3)
+    : Button (name), style (buttonStyle)
 {
 }
 
@@ -51,14 +53,16 @@ void DrawableButton::setImages (const Drawable* normal,
 {
     jassert (normal != nullptr); // you really need to give it at least a normal image..
 
-    normalImage     = copyDrawableIfNotNull (normal);
-    overImage       = copyDrawableIfNotNull (over);
-    downImage       = copyDrawableIfNotNull (down);
-    disabledImage   = copyDrawableIfNotNull (disabled);
-    normalImageOn   = copyDrawableIfNotNull (normalOn);
-    overImageOn     = copyDrawableIfNotNull (overOn);
-    downImageOn     = copyDrawableIfNotNull (downOn);
-    disabledImageOn = copyDrawableIfNotNull (disabledOn);
+    normalImage     .reset (copyDrawableIfNotNull (normal));
+    overImage       .reset (copyDrawableIfNotNull (over));
+    downImage       .reset (copyDrawableIfNotNull (down));
+    disabledImage   .reset (copyDrawableIfNotNull (disabled));
+    normalImageOn   .reset (copyDrawableIfNotNull (normalOn));
+    overImageOn     .reset (copyDrawableIfNotNull (overOn));
+    downImageOn     .reset (copyDrawableIfNotNull (downOn));
+    disabledImageOn .reset (copyDrawableIfNotNull (disabledOn));
+
+    currentImage = nullptr;
 
     buttonStateChanged();
 }
@@ -80,6 +84,31 @@ void DrawableButton::setEdgeIndent (const int numPixelsIndent)
     resized();
 }
 
+Rectangle<float> DrawableButton::getImageBounds() const
+{
+    auto r = getLocalBounds();
+
+    if (style != ImageStretched)
+    {
+        auto indentX = jmin (edgeIndent, proportionOfWidth  (0.3f));
+        auto indentY = jmin (edgeIndent, proportionOfHeight (0.3f));
+
+        if (style == ImageOnButtonBackground)
+        {
+            indentX = jmax (getWidth()  / 4, indentX);
+            indentY = jmax (getHeight() / 4, indentY);
+        }
+        else if (style == ImageAboveTextLabel)
+        {
+            r = r.withTrimmedBottom (jmin (16, proportionOfHeight (0.25f)));
+        }
+
+        r = r.reduced (indentX, indentY);
+    }
+
+    return r.toFloat();
+}
+
 void DrawableButton::resized()
 {
     Button::resized();
@@ -87,36 +116,11 @@ void DrawableButton::resized()
     if (currentImage != nullptr)
     {
         if (style == ImageRaw)
-        {
             currentImage->setOriginWithOriginalSize (Point<float>());
-        }
-        else if (style == ImageStretched)
-        {
-            currentImage->setTransformToFit (getLocalBounds().toFloat(), RectanglePlacement::stretchToFit);
-        }
         else
-        {
-            Rectangle<int> imageSpace;
-
-            const int indentX = jmin (edgeIndent, proportionOfWidth  (0.3f));
-            const int indentY = jmin (edgeIndent, proportionOfHeight (0.3f));
-
-            if (style == ImageOnButtonBackground)
-            {
-                imageSpace = getLocalBounds().reduced (jmax (getWidth()  / 4, indentX),
-                                                       jmax (getHeight() / 4, indentY));
-            }
-            else
-            {
-                const int textH = (style == ImageAboveTextLabel) ? jmin (16, proportionOfHeight (0.25f)) : 0;
-
-                imageSpace.setBounds (indentX, indentY,
-                                      getWidth()  - indentX * 2,
-                                      getHeight() - indentY * 2 - textH);
-            }
-
-            currentImage->setTransformToFit (imageSpace.toFloat(), RectanglePlacement::centred);
-        }
+            currentImage->setTransformToFit (getImageBounds(),
+                                             style == ImageStretched ? RectanglePlacement::stretchToFit
+                                                                     : RectanglePlacement::centred);
     }
 }
 
@@ -133,8 +137,8 @@ void DrawableButton::buttonStateChanged()
     }
     else
     {
-        imageToDraw = getToggleState() ? disabledImageOn
-                                       : disabledImage;
+        imageToDraw = getToggleState() ? disabledImageOn.get()
+                                       : disabledImage.get();
 
         if (imageToDraw == nullptr)
         {
@@ -152,7 +156,7 @@ void DrawableButton::buttonStateChanged()
         {
             currentImage->setInterceptsMouseClicks (false, false);
             addAndMakeVisible (currentImage);
-            DrawableButton::resized();
+            resized();
         }
     }
 
@@ -175,7 +179,7 @@ void DrawableButton::paintButton (Graphics& g,
                                   const bool isMouseOverButton,
                                   const bool isButtonDown)
 {
-    LookAndFeel& lf = getLookAndFeel();
+    auto& lf = getLookAndFeel();
 
     if (style == ImageOnButtonBackground)
         lf.drawButtonBackground (g, *this,
@@ -197,25 +201,27 @@ Drawable* DrawableButton::getCurrentImage() const noexcept
 
 Drawable* DrawableButton::getNormalImage() const noexcept
 {
-    return (getToggleState() && normalImageOn != nullptr) ? normalImageOn
-                                                          : normalImage;
+    return (getToggleState() && normalImageOn != nullptr) ? normalImageOn.get()
+                                                          : normalImage.get();
 }
 
 Drawable* DrawableButton::getOverImage() const noexcept
 {
     if (getToggleState())
     {
-        if (overImageOn   != nullptr)   return overImageOn;
-        if (normalImageOn != nullptr)   return normalImageOn;
+        if (overImageOn   != nullptr)   return overImageOn.get();
+        if (normalImageOn != nullptr)   return normalImageOn.get();
     }
 
-    return overImage != nullptr ? overImage : normalImage;
+    return overImage != nullptr ? overImage.get() : normalImage.get();
 }
 
 Drawable* DrawableButton::getDownImage() const noexcept
 {
-    if (Drawable* const d = getToggleState() ? downImageOn : downImage)
+    if (auto* d = getToggleState() ? downImageOn.get() : downImage.get())
         return d;
 
     return getOverImage();
 }
+
+} // namespace juce

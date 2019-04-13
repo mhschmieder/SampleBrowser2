@@ -1,6 +1,7 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2013
-Project("{499ED31D-3E35-B08A-A3D0-E3C7F1E7C79A}") = "SampleBrowser", "SampleBrowser.vcxproj", "{1DECFADE-787E-065C-37AB-CC16632284D8}"
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleBrowser - App", "SampleBrowser_App.vcxproj", "{2557ECDE-FBCD-3FD8-A42C-2BB0984DA3C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,10 +9,10 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1DECFADE-787E-065C-37AB-CC16632284D8}.Debug|Win32.ActiveCfg = Debug|Win32
-		{1DECFADE-787E-065C-37AB-CC16632284D8}.Debug|Win32.Build.0 = Debug|Win32
-		{1DECFADE-787E-065C-37AB-CC16632284D8}.Release|Win32.ActiveCfg = Release|Win32
-		{1DECFADE-787E-065C-37AB-CC16632284D8}.Release|Win32.Build.0 = Release|Win32
+		{2557ECDE-FBCD-3FD8-A42C-2BB0984DA3C9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2557ECDE-FBCD-3FD8-A42C-2BB0984DA3C9}.Debug|Win32.Build.0 = Debug|Win32
+		{2557ECDE-FBCD-3FD8-A42C-2BB0984DA3C9}.Release|Win32.ActiveCfg = Release|Win32
+		{2557ECDE-FBCD-3FD8-A42C-2BB0984DA3C9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

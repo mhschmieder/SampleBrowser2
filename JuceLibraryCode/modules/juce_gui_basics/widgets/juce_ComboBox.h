@@ -2,29 +2,30 @@
   ==============================================================================
 
    This file is part of the JUCE library.
-   Copyright (c) 2013 - Raw Material Software Ltd.
+   Copyright (c) 2017 - ROLI Ltd.
 
-   Permission is granted to use this software under the terms of either:
-   a) the GPL v2 (or any later version)
-   b) the Affero GPL v3
+   JUCE is an open source library subject to commercial or open-source
+   licensing.
 
-   Details of these licenses can be found at: www.gnu.org/licenses
+   By using JUCE, you agree to the terms of both the JUCE 5 End-User License
+   Agreement and JUCE 5 Privacy Policy (both updated and effective as of the
+   27th April 2017).
 
-   JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
-   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   End User License Agreement: www.juce.com/juce-5-licence
+   Privacy Policy: www.juce.com/juce-5-privacy-policy
 
-   ------------------------------------------------------------------------------
+   Or: You may also use this code under the terms of the GPL v3 (see
+   www.gnu.org/licenses).
 
-   To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.juce.com for more information.
+   JUCE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
+   EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
+   DISCLAIMED.
 
   ==============================================================================
 */
 
-#ifndef JUCE_COMBOBOX_H_INCLUDED
-#define JUCE_COMBOBOX_H_INCLUDED
-
+namespace juce
+{
 
 //==============================================================================
 /**
@@ -37,14 +38,12 @@
     either be read-only text, or editable.
 
     To find out when the user selects a different item or edits the text, you
-    can register a ComboBox::Listener to receive callbacks.
-
-    @see ComboBox::Listener
+    can assign a lambda to the onChange member, or register a ComboBox::Listener
+    to receive callbacks.
 */
 class JUCE_API  ComboBox  : public Component,
                             public SettableTooltipClient,
-                            public LabelListener,  // (can't use Label::Listener due to idiotic VC2005 bug)
-                            public ValueListener,
+                            public Value::Listener,
                             private AsyncUpdater
 {
 public:
@@ -57,13 +56,13 @@ public:
 
         @param componentName    the name to set for the component (see Component::setName())
     */
-    explicit ComboBox (const String& componentName = String::empty);
+    explicit ComboBox (const String& componentName = String());
 
     /** Destructor. */
-    ~ComboBox();
+    virtual ~ComboBox();
 
     //==============================================================================
-    /** Sets whether the test in the combo-box is editable.
+    /** Sets whether the text in the combo-box is editable.
 
         The default state for a new ComboBox is non-editable, and can only be changed
         by choosing from the drop-down list.
@@ -94,7 +93,7 @@ public:
         @param newItemId        an associated ID number that can be set or retrieved - see
                                 getSelectedId() and setSelectedId(). Note that this value can not
                                 be 0!
-        @see setItemEnabled, addSeparator, addSectionHeading, removeItem, getNumItems, getItemText, getItemId
+        @see setItemEnabled, addSeparator, addSectionHeading, getNumItems, getItemText, getItemId
     */
     void addItem (const String& newItemText, int newItemId);
 
@@ -142,7 +141,7 @@ public:
         If this call causes the content to be cleared, and a change-message
         will be broadcast according to the notification parameter.
 
-        @see addItem, removeItem, getNumItems
+        @see addItem, getNumItems
     */
     void clear (NotificationType notification = sendNotificationAsync);
 
@@ -257,8 +256,22 @@ public:
     */
     void showEditor();
 
-    /** Pops up the combo box's list. */
-    void showPopup();
+    /** Pops up the combo box's list.
+        This is virtual so that you can override it with your own custom popup
+        mechanism if you need some really unusual behaviour.
+    */
+    virtual void showPopup();
+
+    /** Hides the combo box's popup list, if it's currently visible. */
+    void hidePopup();
+
+    /** Returns true if the popup menu is currently being shown. */
+    bool isPopupActive() const noexcept                 { return menuActive; }
+
+    /** Returns the PopupMenu object associated with the ComboBox.
+        Can be useful for adding sub-menus to the ComboBox standard PopupMenu
+    */
+    PopupMenu* getRootMenu() { return &currentMenu; }
 
     //==============================================================================
     /**
@@ -284,6 +297,10 @@ public:
 
     /** Deregisters a previously-registered listener. */
     void removeListener (Listener* listener);
+
+    //==============================================================================
+    /** You can assign a lambda to this callback object to have it called when the selected ID is changed. */
+    std::function<void()> onChange;
 
     //==============================================================================
     /** Sets a message to display when there is no item currently selected.
@@ -313,6 +330,12 @@ public:
     /** Gives the ComboBox a tooltip. */
     void setTooltip (const String& newTooltip) override;
 
+    /** This can be used to allow the scroll-wheel to nudge the chosen item.
+        By default it's disabled, and I'd recommend leaving it disabled if there's any
+        chance that the control might be inside a scrollable list or viewport.
+    */
+    void setScrollWheelEnabled (bool enabled) noexcept;
+
 
     //==============================================================================
     /** A set of colour IDs to use to change the colour of various aspects of the combo box.
@@ -320,17 +343,18 @@ public:
         These constants can be used either via the Component::setColour(), or LookAndFeel::setColour()
         methods.
 
-        To change the colours of the menu that pops up
+        To change the colours of the menu that pops up, you can set the colour IDs in PopupMenu::ColourIDs.
 
         @see Component::setColour, Component::findColour, LookAndFeel::setColour, LookAndFeel::findColour
     */
     enum ColourIds
     {
-        backgroundColourId  = 0x1000b00,    /**< The background colour to fill the box with. */
-        textColourId        = 0x1000a00,    /**< The colour for the text in the box. */
-        outlineColourId     = 0x1000c00,    /**< The colour for an outline around the box. */
-        buttonColourId      = 0x1000d00,    /**< The base colour for the button (a LookAndFeel class will probably use variations on this). */
-        arrowColourId       = 0x1000e00,    /**< The colour for the arrow shape that pops up the menu */
+        backgroundColourId     = 0x1000b00,   /**< The background colour to fill the box with. */
+        textColourId           = 0x1000a00,   /**< The colour for the text in the box. */
+        outlineColourId        = 0x1000c00,   /**< The colour for an outline around the box. */
+        buttonColourId         = 0x1000d00,   /**< The base colour for the button (a LookAndFeel class will probably use variations on this). */
+        arrowColourId          = 0x1000e00,   /**< The colour for the arrow shape that pops up the menu */
+        focusedOutlineColourId = 0x1000f00    /**< The colour that will be used to draw a box around the edge of the component when it has focus. */
     };
 
     //==============================================================================
@@ -353,8 +377,6 @@ public:
     };
 
     //==============================================================================
-    /** @internal */
-    void labelTextChanged (Label*) override;
     /** @internal */
     void enablementChanged() override;
     /** @internal */
@@ -387,6 +409,8 @@ public:
     bool keyPressed (const KeyPress&) override;
     /** @internal */
     void valueChanged (Value&) override;
+    /** @internal */
+    void parentHierarchyChanged() override;
 
     // These methods' bool parameters have changed: see their new method signatures.
     JUCE_DEPRECATED (void clear (bool));
@@ -396,36 +420,32 @@ public:
 
 private:
     //==============================================================================
-    struct ItemInfo
+    enum EditableState
     {
-        ItemInfo (const String&, int itemId, bool isEnabled, bool isHeading);
-        bool isSeparator() const noexcept;
-        bool isRealItem() const noexcept;
-
-        String name;
-        int itemId;
-        bool isEnabled : 1, isHeading : 1;
+        editableUnknown,
+        labelIsNotEditable,
+        labelIsEditable
     };
 
-    OwnedArray <ItemInfo> items;
+    PopupMenu currentMenu;
     Value currentId;
-    int lastCurrentId;
-    bool isButtonDown, separatorPending, menuActive;
-    ListenerList <Listener> listeners;
+    int lastCurrentId = 0;
+    bool isButtonDown = false, menuActive = false, scrollWheelEnabled = false;
+    float mouseWheelAccumulator = 0;
+    ListenerList<Listener> listeners;
     ScopedPointer<Label> label;
     String textWhenNothingSelected, noChoicesMessage;
+    EditableState labelEditableState = editableUnknown;
 
-    ItemInfo* getItemForId (int) const noexcept;
-    ItemInfo* getItemForIndex (int) const noexcept;
+    PopupMenu::Item* getItemForId (int) const noexcept;
+    PopupMenu::Item* getItemForIndex (int) const noexcept;
     bool selectIfEnabled (int index);
     bool nudgeSelectedItem (int delta);
     void sendChange (NotificationType);
-    static void popupMenuFinishedCallback (int, ComboBox*);
+    void showPopupIfNotActive();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ComboBox)
 };
 
-/** This typedef is just for compatibility with old code - newer code should use the ComboBox::Listener class directly. */
-typedef ComboBox::Listener ComboBoxListener;
 
-#endif   // JUCE_COMBOBOX_H_INCLUDED
+} // namespace juce

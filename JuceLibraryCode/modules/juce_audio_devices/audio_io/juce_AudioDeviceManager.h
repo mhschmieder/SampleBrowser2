@@ -2,29 +2,26 @@
   ==============================================================================
 
    This file is part of the JUCE library.
-   Copyright (c) 2013 - Raw Material Software Ltd.
+   Copyright (c) 2017 - ROLI Ltd.
 
-   Permission is granted to use this software under the terms of either:
-   a) the GPL v2 (or any later version)
-   b) the Affero GPL v3
+   JUCE is an open source library subject to commercial or open-source
+   licensing.
 
-   Details of these licenses can be found at: www.gnu.org/licenses
+   The code included in this file is provided under the terms of the ISC license
+   http://www.isc.org/downloads/software-support-policy/isc-license. Permission
+   To use, copy, modify, and/or distribute this software for any purpose with or
+   without fee is hereby granted provided that the above copyright notice and
+   this permission notice appear in all copies.
 
-   JUCE is distributed in the hope that it will be useful, but WITHOUT ANY
-   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-   ------------------------------------------------------------------------------
-
-   To release a closed-source product which uses JUCE, commercial licenses are
-   available: visit www.juce.com for more information.
+   JUCE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
+   EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
+   DISCLAIMED.
 
   ==============================================================================
 */
 
-#ifndef JUCE_AUDIODEVICEMANAGER_H_INCLUDED
-#define JUCE_AUDIODEVICEMANAGER_H_INCLUDED
-
+namespace juce
+{
 
 //==============================================================================
 /**
@@ -99,6 +96,7 @@ public:
         AudioDeviceSetup();
 
         bool operator== (const AudioDeviceSetup& other) const;
+        bool operator!= (const AudioDeviceSetup& other) const;
 
         /** The name of the audio device used for output.
             The name has to be one of the ones listed by the AudioDeviceManager's currently
@@ -209,10 +207,9 @@ public:
 
     //==============================================================================
     /** Returns the current device properties that are in use.
-
         @see setAudioDeviceSetup
     */
-    void getAudioDeviceSetup (AudioDeviceSetup& setup);
+    void getAudioDeviceSetup (AudioDeviceSetup& result) const;
 
     /** Changes the current device or its settings.
 
@@ -238,7 +235,7 @@ public:
 
 
     /** Returns the currently-active audio device. */
-    AudioIODevice* getCurrentAudioDevice() const noexcept               { return currentAudioDevice; }
+    AudioIODevice* getCurrentAudioDevice() const noexcept               { return currentAudioDevice.get(); }
 
     /** Returns the type of audio device currently in use.
         @see setCurrentAudioDeviceType
@@ -261,9 +258,7 @@ public:
     void setCurrentAudioDeviceType (const String& type,
                                     bool treatAsChosenDevice);
 
-
     /** Closes the currently-open device.
-
         You can call restartLastAudioDevice() later to reopen it in the same state
         that it was just in.
     */
@@ -305,8 +300,8 @@ public:
 
     //==============================================================================
     /** Returns the average proportion of available CPU being spent inside the audio callbacks.
-
-        Returns a value between 0 and 1.0
+        @returns  A value between 0 and 1.0 to indicate the approximate proportion of CPU
+                  time spent in the callbacks.
     */
     double getCpuUsage() const;
 
@@ -333,16 +328,16 @@ public:
     void setMidiInputEnabled (const String& midiInputDeviceName, bool enabled);
 
     /** Returns true if a given midi input device is being used.
-
         @see setMidiInputEnabled
     */
     bool isMidiInputEnabled (const String& midiInputDeviceName) const;
 
     /** Registers a listener for callbacks when midi events arrive from a midi input.
 
-        The device name can be empty to indicate that it wants events from whatever the
-        current "default" device is. Or it can be the name of one of the midi input devices
-        (see MidiInput::getDevices() for the names).
+        The device name can be empty to indicate that it wants to receive all incoming
+        events from all the enabled MIDI inputs. Or it can be the name of one of the
+        MIDI input devices if it just wants the events from that device. (see
+        MidiInput::getDevices() for the list of device names).
 
         Only devices which are enabled (see the setMidiInputEnabled() method) will have their
         events forwarded on to listeners.
@@ -350,8 +345,7 @@ public:
     void addMidiInputCallback (const String& midiInputDeviceName,
                                MidiInputCallback* callback);
 
-    /** Removes a listener that was previously registered with addMidiInputCallback().
-    */
+    /** Removes a listener that was previously registered with addMidiInputCallback(). */
     void removeMidiInputCallback (const String& midiInputDeviceName,
                                   MidiInputCallback* callback);
 
@@ -371,22 +365,17 @@ public:
     void setDefaultMidiOutput (const String& deviceName);
 
     /** Returns the name of the default midi output.
-
         @see setDefaultMidiOutput, getDefaultMidiOutput
     */
-    String getDefaultMidiOutputName() const                         { return defaultMidiOutputName; }
+    const String& getDefaultMidiOutputName() const noexcept         { return defaultMidiOutputName; }
 
     /** Returns the current default midi output device.
-
-        If no device has been selected, or the device can't be opened, this will
-        return 0.
-
+        If no device has been selected, or the device can't be opened, this will return nullptr.
         @see getDefaultMidiOutputName
     */
-    MidiOutput* getDefaultMidiOutput() const noexcept               { return defaultMidiOutput; }
+    MidiOutput* getDefaultMidiOutput() const noexcept               { return defaultMidiOutput.get(); }
 
-    /** Returns a list of the types of device supported.
-    */
+    /** Returns a list of the types of device supported. */
     const OwnedArray<AudioIODeviceType>& getAvailableDeviceTypes();
 
     //==============================================================================
@@ -413,28 +402,28 @@ public:
     */
     void playTestSound();
 
-    /** Turns on level-measuring.
-
-        When enabled, the device manager will measure the peak input level
-        across all channels, and you can get this level by calling getCurrentInputLevel().
-
-        This is mainly intended for audio setup UI panels to use to create a mic
-        level display, so that the user can check that they've selected the right
-        device.
-
-        A simple filter is used to make the level decay smoothly, but this is
-        only intended for giving rough feedback, and not for any kind of accurate
-        measurement.
+    //==============================================================================
+    /** Turns on level-measuring for input channels.
+        @see getCurrentInputLevel()
     */
-    void enableInputLevelMeasurement (bool enableMeasurement);
+    void enableInputLevelMeasurement (bool enableMeasurement) noexcept;
+
+    /** Turns on level-measuring for output channels.
+        @see getCurrentOutputLevel()
+    */
+    void enableOutputLevelMeasurement (bool enableMeasurement) noexcept;
 
     /** Returns the current input level.
-
         To use this, you must first enable it by calling enableInputLevelMeasurement().
-
-        See enableInputLevelMeasurement() for more info.
+        @see enableInputLevelMeasurement()
     */
-    double getCurrentInputLevel() const;
+    double getCurrentInputLevel() const noexcept;
+
+    /** Returns the current output level.
+        To use this, you must first enable it by calling enableOutputLevelMeasurement().
+        @see enableOutputLevelMeasurement()
+    */
+    double getCurrentOutputLevel() const noexcept;
 
     /** Returns the a lock that can be used to synchronise access to the audio callback.
         Obviously while this is locked, you're blocking the audio thread from running, so
@@ -448,6 +437,15 @@ public:
     */
     CriticalSection& getMidiCallbackLock() noexcept         { return midiCallbackLock; }
 
+    //==============================================================================
+    /** Returns the number of under- or over runs reported.
+
+        This method will use the underlying device's native getXRunCount if it supports
+        it. Otherwise it will estimate the number of under-/overruns by measuring the
+        time it spent in the audio callback.
+    */
+    int getXRunCount() const noexcept;
+
 private:
     //==============================================================================
     OwnedArray<AudioIODeviceType> availableDeviceTypes;
@@ -456,27 +454,45 @@ private:
     AudioDeviceSetup currentSetup;
     ScopedPointer<AudioIODevice> currentAudioDevice;
     Array<AudioIODeviceCallback*> callbacks;
-    int numInputChansNeeded, numOutputChansNeeded;
+    int numInputChansNeeded = 0, numOutputChansNeeded = 2;
     String currentDeviceType;
     BigInteger inputChannels, outputChannels;
     ScopedPointer<XmlElement> lastExplicitSettings;
-    mutable bool listNeedsScanning;
-    bool useInputNames;
-    Atomic<int> inputLevelMeasurementEnabledCount;
-    double inputLevel;
-    ScopedPointer<AudioSampleBuffer> testSound;
-    int testSoundPosition;
-    AudioSampleBuffer tempBuffer;
+    mutable bool listNeedsScanning = true;
+    AudioBuffer<float> tempBuffer;
+
+    struct MidiCallbackInfo
+    {
+        String deviceName;
+        MidiInputCallback* callback;
+    };
 
     StringArray midiInsFromXml;
     OwnedArray<MidiInput> enabledMidiInputs;
-    Array<MidiInputCallback*> midiCallbacks;
-    StringArray midiCallbackDevices;
+    Array<MidiCallbackInfo> midiCallbacks;
+
     String defaultMidiOutputName;
     ScopedPointer<MidiOutput> defaultMidiOutput;
     CriticalSection audioCallbackLock, midiCallbackLock;
 
-    double cpuUsageMs, timeToCpuScale;
+    ScopedPointer<AudioBuffer<float>> testSound;
+    int testSoundPosition = 0;
+
+    double cpuUsageMs = 0, timeToCpuScale = 0, msPerBlock = 0;
+    int xruns = 0;
+
+    struct LevelMeter
+    {
+        LevelMeter() noexcept;
+        void updateLevel (const float* const*, int numChannels, int numSamples) noexcept;
+        void setEnabled (bool) noexcept;
+        double getCurrentLevel() const noexcept;
+
+        Atomic<int> enabled;
+        Atomic<float> level;
+    };
+
+    LevelMeter inputLevelMeter, outputLevelMeter;
 
     //==============================================================================
     class CallbackHandler;
@@ -514,4 +530,4 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioDeviceManager)
 };
 
-#endif   // JUCE_AUDIODEVICEMANAGER_H_INCLUDED
+} // namespace juce
