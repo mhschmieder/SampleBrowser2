@@ -60,7 +60,7 @@ void MainComponent::loadOptions()
 	options.applicationName = ProjectInfo::projectName;
 	options.folderName = ProjectInfo::projectName;
 	options.filenameSuffix = "settings";
-	options.osxLibrarySubFolder = "Applications Support";
+	options.osxLibrarySubFolder = "~/Library/Applications Support";
 	applicationProperties.setStorageParameters(options);
 
 	PropertiesFile *properties = applicationProperties.getUserSettings();

@@ -20,7 +20,7 @@ FilesPane::FilesPane()
 	header->addColumn("Channels", SamplesModel::channels, 70);
 	header->addColumn("Bits", SamplesModel::bits, 70);
 	header->addColumn("Size", SamplesModel::size, 90);
-	filesList.setHeader(header);
+    filesList.setHeader(std::unique_ptr<TableHeaderComponent> (std::move(header)));
 	filesList.setModel(&model);
 	model.addListener(this);
 }

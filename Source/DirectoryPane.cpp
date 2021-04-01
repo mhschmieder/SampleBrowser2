@@ -101,7 +101,7 @@ void DirectoryPane::upPath()
 void DirectoryPane::browsePath()
 {
 	FileBrowserComponent browser(FileBrowserComponent::canSelectDirectories | FileBrowserComponent::openMode, currentPath, nullptr, nullptr);
-	FileChooserDialogBox dialog("Select path", String::empty, browser, false, Colours::lightgrey);
+    FileChooserDialogBox dialog("Select path", String(), browser, false, Colours::lightgrey);
 	if (dialog.show())
 	{
 		currentPath = browser.getSelectedFile(0);
